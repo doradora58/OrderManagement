@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management System</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 30px auto; padding: 0 15px; }
+        .form-group { margin-bottom: 12px; }
+        .section-group { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 6px; background-color: #fdfdfd; }
+        .section-group h3 { margin-top: 0; font-size: 1.1em; color: #333; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+        .row { display: flex; gap: 15px; }
+        .col-half { flex: 1; }
+        .col-zip { width: 140px; }
+        label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 0.85em; color: #555; }
+        input[type="text"] { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 12px 24px; background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; font-size: 1em; }
+        button:hover { background-color: #0056b3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 0.9em; }
+        th { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <h1>📦 Create Transport Order</h1>
+    
+    <form id="orderForm">
+        <!-- From Section -->
+        <div class="section-group">
+            <h3>📍 From (Departure Information)</h3>
+            <div class="form-group">
+                <label>Sender Name:</label>
+                <input type="text" id="senderName" value="Taro Toyota" required>
+            </div>
+            <div class="row">
+                <div class="form-group col-zip">
+                    <label>Postal Code:</label>
+                    <input type="text" id="fromPostalCode" value="450-0002" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Address:</label>
+                    <input type="text" id="fromAddress" value="Meieki 1-1-4, Nakamura-ku, Nagoya, Aichi" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- To Section -->
+        <div class="section-group">
+            <h3>🎯 To (Destination Information)</h3>
+            <div class="form-group">
+                <label>Recipient Name:</label>
+                <input type="text" id="recipientName" value="Hanako Aichi" required>
+            </div>
+            <div class="row">
+                <div class="form-group col-zip">
+                    <label>Postal Code:</label>
+                    <input type="text" id="toPostalCode" value="480-1100" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Address:</label>
+                    <input type="text" id="toAddress" value="Katte 501, Nagakute, Aichi" required>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit">Submit Order & Dispatch</button>
+    </form>
+
+    <h2>📋 Order List</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>From (Sender / Address)</th>
+                <th>To (Recipient / Address)</th>
+                <th>Status</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody id="orderList"></tbody>
+    </table>
+
+    <script>
+        const form = document.getElementById('orderForm');
+        
+        async function fetchOrders() {
+            try {
+                const res = await fetch('/api/orders');
+                const orders = await res.json();
+                const tbody = document.getElementById('orderList');
+                tbody.innerHTML = orders.map(o => `
+                    <tr>
+                        <td>${o.id}</td>
+                        <td><strong>${o.from.senderName}</strong><br>[${o.from.postalCode}] ${o.from.address}</td>
+                        <td><strong>${o.to.recipientName}</strong><br>[${o.to.postalCode}] ${o.to.address}</td>
+                        <td><strong>${o.status}</strong></td>
+                        <td>${new Date(o.createdAt).toLocaleString()}</td>
+                    </tr>
+                `).reverse().join('');
+            } catch (err) {
+                console.error("Failed to fetch orders:", err);
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                from: {
+                    senderName: document.getElementById('senderName').value,
+                    postalCode: document.getElementById('fromPostalCode').value,
+                    address: document.getElementById('fromAddress').value
+                },
+                to: {
+                    recipientName: document.getElementById('recipientName').value,
+                    postalCode: document.getElementById('toPostalCode').value,
+                    address: document.getElementById('toAddress').value
+                }
+            };
+
+            await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            fetchOrders();
+        });
+
+        fetchOrders();
+    </script>
+</body>
+</html>

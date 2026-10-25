@@ -1,0 +1,47 @@
+name: CI/CD Pipeline for OrderManagement
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout repository source code (Fetch full history for GitVersion)
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for GitVersion to analyze commit history
+
+      # 2. Install and setup GitVersion
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3
+        with:
+          versionSpec: '5.x'
+
+      # 3. Execute GitVersion to generate version variables
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v3
+
+      # 4. Set up QEMU for cross-platform architecture emulation (ARM64 support)
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # 5. Set up Docker Buildx for advanced multi-platform image building
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 6. Build and push the ARM64 Docker image with GitVersion tags
+      - name: Build and Push to Private Registry
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.REGISTRY_HOST }}/order-management:latest
+            ${{ secrets.REGISTRY_HOST }}/order-management:${{ steps.gitversion.outputs.semVer }}
+            ${{ secrets.REGISTRY_HOST }}/order-management:${{ steps.gitversion.outputs.fullSemVer }}
