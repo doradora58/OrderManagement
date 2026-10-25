@@ -40,6 +40,7 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: linux/arm64
+          provenance: false
           push: true
           tags: |
             ${{ secrets.REGISTRY_HOST }}/order-management:latest
