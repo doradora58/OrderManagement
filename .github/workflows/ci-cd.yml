@@ -2,7 +2,7 @@ name: CI/CD to Local Registry
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main]
 
 jobs:
   build-and-push:
@@ -11,35 +11,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # GitVersion が正確にバージョンを計算するために全履歴の取得が必要
 
-      # 1. GitVersion のセットアップ
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3
-        with:
-          versionSpec: '5.x' # または '6.x'
-
-      # 2. GitVersion の実行（バージョン情報の生成）
-      - name: Determine Version
-        uses: gittools/actions/gitversion/execute@v3
-        id: gitversion # 出力結果を参照するためのID
-
-      # 3. 生成されたバージョンを確認（ログ出力用）
-      - name: Display Version Outputs
+      - name: Generate Version Tag
+        id: prep
         run: |
-          echo "Major: ${{ steps.gitversion.outputs.Major }}"
-          echo "Minor: ${{ steps.gitversion.outputs.Minor }}"
-          echo "Patch: ${{ steps.gitversion.outputs.Patch }}"
-          echo "NuGetVersion: ${{ steps.gitversion.outputs.NuGetVersion }}"
-          echo "FullSemVer: ${{ steps.gitversion.outputs.FullSemVer }}"
+          # 短縮コミットハッシュと日時からバージョン文字列を生成
+          SHA=$(git rev-parse --short HEAD)
+          VERSION="1.0.0-$(date +'%Y%m%d%H%M%S')-${SHA}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      # 4. GitVersion のバージョンを使った Docker ビルド＆プッシュ
       - name: Build and Push Docker Image
         run: |
-          VERSION="${{ steps.gitversion.outputs.FullSemVer }}"
+          VERSION="${{ steps.prep.outputs.version }}"
           
-          # 最新版（latest）と、GitVersionで算出したバージョンの両方をタグ付けしてプッシュ
           docker build -t 192.168.1.148:5000/order-management:latest \
                        -t 192.168.1.148:5000/order-management:${VERSION} .
                        
