@@ -10,12 +10,13 @@ EXPOSE 8080
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
+ARG APP_VERSION=dev
 WORKDIR /src
 COPY ["OrderManagement.csproj", "."]
 RUN dotnet restore "./OrderManagement.csproj"
 COPY . .
 WORKDIR "/src/."
-RUN dotnet build "./OrderManagement.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./OrderManagement.csproj" -c $BUILD_CONFIGURATION -o /app/build /p:Version=$APP_VERSION
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
@@ -26,4 +27,8 @@ RUN dotnet publish "./OrderManagement.csproj" -c $BUILD_CONFIGURATION -o /app/pu
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+ARG APP_VERSION=dev
+ENV APP_VERSION=$APP_VERSION
+
 ENTRYPOINT ["dotnet", "OrderManagement.dll"]

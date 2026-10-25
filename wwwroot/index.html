@@ -22,7 +22,13 @@
     </style>
 </head>
 <body>
-    <h1>📦 Create Transport Order</h1>
+    <!-- ヘッダー部分：タイトルとバージョン表示を横並びにする -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="margin: 0;">📦 Create Transport Order</h1>
+        <span id="appVersion" style="font-size: 0.85em; color: #666; background: #f1f3f5; padding: 6px 12px; border-radius: 4px; border: 1px solid #dee2e6;">
+            Version: Loading...
+        </span>
+    </div>
     
     <form id="orderForm">
         <!-- From Section -->
@@ -83,6 +89,18 @@
     <script>
         const form = document.getElementById('orderForm');
         
+        // ★ 追加: バックエンドからバージョン情報を取得して画面に反映する関数
+        async function fetchVersion() {
+            try {
+                const res = await fetch('/api/version');
+                const data = await res.json();
+                document.getElementById('appVersion').textContent = `Version: ${data.version}`;
+            } catch (err) {
+                console.error("Failed to fetch version:", err);
+                document.getElementById('appVersion').textContent = "Version: unknown";
+            }
+        }
+
         async function fetchOrders() {
             try {
                 const res = await fetch('/api/orders');
@@ -126,6 +144,8 @@
             fetchOrders();
         });
 
+        // ページ読み込み時にオーダー一覧とバージョンを両方取得
+        fetchVersion();
         fetchOrders();
     </script>
 </body>
