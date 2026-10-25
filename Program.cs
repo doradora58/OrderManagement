@@ -28,6 +28,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthorization();
 
+app.MapGet("/api/version", () =>
+{
+    var version = Environment.GetEnvironmentVariable("APP_VERSION") ?? "dev";
+    return Results.Ok(new { version });
+});
+
 app.MapControllers();
 
 app.Run();
