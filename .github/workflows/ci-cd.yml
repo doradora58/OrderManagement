@@ -43,5 +43,5 @@ jobs:
           push: true
           tags: |
             ${{ secrets.REGISTRY_HOST }}/order-management:latest
-            ${{ secrets.REGISTRY_HOST }}/order-management:${{ steps.gitversion.outputs.semVer }}
-            ${{ secrets.REGISTRY_HOST }}/order-management:${{ steps.gitversion.outputs.fullSemVer }}
+            ${{ secrets.REGISTRY_HOST }}/order-management:${{ steps.gitversion.outputs.assemblySemVer }}
+            ${{ secrets.REGISTRY_HOST }}/order-management:${{ steps.gitversion.outputs.majorMinorPatch }}-${{ github.run_number }}
