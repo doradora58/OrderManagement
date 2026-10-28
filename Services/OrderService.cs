@@ -19,14 +19,14 @@ namespace OrderManagement.Services
 
             await orderRepository.AddAsync(order);
 
-            var fmsUrl = configuration["FMS_API_URL"] ?? "http://fms-app:8080/api/dispatch";
+            var fmsUrl = configuration["FMS_API_URL"] ?? "http://fms:8080/api/dispatch";
             try
             {
                 var response = await httpClient.PostAsJsonAsync(fmsUrl, new
                 {
                     orderId = order.Id,
-                    fromAddress = order.From.Address,
-                    toAddress = order.To.Address
+                    fromAddress = $"{order.From.PostalCode} {order.From.Address}",
+                    toAddress = $"{order.To.PostalCode} {order.To.Address}"
                 });
 
                 var newStatus = response.IsSuccessStatusCode ? "DISPATCHED" : "DISPATCH_FAILED";
