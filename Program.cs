@@ -19,7 +19,8 @@ builder.Services.AddOpenTelemetry()
         }))
     .WithMetrics(metrics => metrics
         .AddAspNetCoreInstrumentation()
-        .AddRuntimeInstrumentation());
+        .AddRuntimeInstrumentation()
+        .AddPrometheusExporter());
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -51,6 +52,6 @@ app.MapGet("/api/version", () =>
     return Results.Ok(new { version });
 });
 
-app.MapControllers();
-
+app.MapControllers(); 
+app.MapPrometheusScrapingEndpoint();
 app.Run();
