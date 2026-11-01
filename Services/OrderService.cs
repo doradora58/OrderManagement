@@ -19,7 +19,7 @@ namespace OrderManagement.Services
 
             await orderRepository.AddAsync(order);
 
-            var fmsUrl = configuration["FMS_API_URL"] ?? "http://fms:8080/api/dispatch";
+            var fmsUrl = configuration["FMS_API_URL"] ?? "http://fms:8080/api/transportjob/create";
             try
             {
                 var response = await httpClient.PostAsJsonAsync(fmsUrl, new
