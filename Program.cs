@@ -1,6 +1,9 @@
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OrderManagement.Messaging;
+using OrderManagement.Messaging.Handlers;
+using OrderManagement.Models;
 using OrderManagement.Repositories;
 using OrderManagement.Services;
 
@@ -23,6 +26,9 @@ builder.Services.AddOpenTelemetry()
         .AddPrometheusExporter());
 
 // Add services to the container
+builder.Services.AddHostedService<RabbitMqConsumer>();
+ builder.Services.AddScoped<IMessageHandler<JobStatusEvent>, JobStatusEventHandler>();
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
